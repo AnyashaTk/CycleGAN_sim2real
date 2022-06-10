@@ -1,8 +1,8 @@
 # Dataset
-data/
-weights/
+data/*
+weights/*
 perfect.zip
-run/
+run/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
