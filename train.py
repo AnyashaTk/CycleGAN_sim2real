@@ -29,6 +29,10 @@ from cyclegan_pytorch import Generator
 from cyclegan_pytorch import ImageDataset
 from cyclegan_pytorch import ReplayBuffer
 from cyclegan_pytorch import weights_init
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
 
 parser = argparse.ArgumentParser(
     description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`")
@@ -91,9 +95,10 @@ if torch.cuda.is_available() and not args.cuda:
 # Dataset
 dataset = ImageDataset(root=os.path.join(args.dataroot, args.dataset),
                        transform=transforms.Compose([
-                           transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
-                           transforms.RandomCrop(args.image_size),
-                           transforms.RandomHorizontalFlip(),
+                           #transforms.Resize(256, Image.BICUBIC),
+                           #transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
+                           #transforms.RandomCrop(args.image_size),
+                           #transforms.RandomHorizontalFlip(),
                            transforms.ToTensor(),
                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]),
                        unaligned=True)
@@ -258,6 +263,8 @@ for epoch in range(0, args.epochs):
         errD_B.backward()
         # Update D_B weights
         optimizer_D_B.step()
+        writer.add_scalar("errD_B/train", errD_B, epoch)
+
 
         progress_bar.set_description(
             f"[{epoch}/{args.epochs - 1}][{i}/{len(dataloader) - 1}] "
@@ -301,3 +308,4 @@ torch.save(netG_A2B.state_dict(), f"weights/{args.dataset}/netG_A2B.pth")
 torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/netG_B2A.pth")
 torch.save(netD_A.state_dict(), f"weights/{args.dataset}/netD_A.pth")
 torch.save(netD_B.state_dict(), f"weights/{args.dataset}/netD_B.pth")
+writer.flush()
