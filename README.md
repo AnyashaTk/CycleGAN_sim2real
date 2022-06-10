@@ -5,8 +5,8 @@
 #### Clone and install requirements
 
 ```bash
-$ git clone https://github.com/Lornatang/CycleGAN-PyTorch
-$ cd CycleGAN-PyTorch/
+$ git clone https://github.com/AnyashaTk/CycleGAN_sim2real_task.git
+$ cd  CycleGAN_sim2real_task/
 $ pip3 install -r requirements.txt
 ```
 
@@ -29,7 +29,7 @@ $ python3 test.py --dataset perfect --cuda
 For single image processing, use the following command.
 
 ```bash
-$ python3 test_image.py --file assets/horse.png --model-name weights/horse2zebra/netG_A2B.pth --cuda
+$ python3 test_image.py --file test_photo.png --model-name weights/perfect/netG_A2B.pth --cuda
 ```
 
 ### Train
@@ -41,8 +41,6 @@ usage: train.py [-h] [--dataroot DATAROOT] [--dataset DATASET] [--epochs N]
                 [--netD_B NETD_B] [--image-size IMAGE_SIZE] [--outf OUTF]
                 [--manualSeed MANUALSEED]
 
-PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent
-Adversarial Networks`
 
 optional arguments:
   -h, --help            show this help message and exit
