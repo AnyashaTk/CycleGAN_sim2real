@@ -34,11 +34,14 @@ class ImageDataset(Dataset):
     def __getitem__(self, index):
         # use cv2 for reading and resizing, because PIL+transform resizing didn't work for some reason
         item_A = self.transform(cv2.resize(cv2.imread(self.files_A[index % len(self.files_A)]), (256, 256)))
+#         item_A = self.transform(Image.open(self.files_A[index % len(self.files_A)]))
 
         if self.unaligned:
             item_B = self.transform(cv2.resize(cv2.imread(self.files_B[random.randint(0, len(self.files_B) - 1)]), (256, 256)))
+#             item_B = self.transform(Image.open(self.files_B[random.randint(0, len(self.files_B) - 1)]))
         else:
             item_B = self.transform(cv2.resize(cv2.imread(self.files_B[index % len(self.files_B)]), (256, 256)))
+#             item_B = self.transform(Image.open(self.files_B[index % len(self.files_B)]))
 
         return {"A": item_A, "B": item_B}
 

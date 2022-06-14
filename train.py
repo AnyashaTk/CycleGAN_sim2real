@@ -31,8 +31,8 @@ from cyclegan_pytorch import ReplayBuffer
 from cyclegan_pytorch import weights_init
 import torch
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter()
 
+writer = SummaryWriter()
 
 parser = argparse.ArgumentParser(
     description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`")
@@ -95,10 +95,10 @@ if torch.cuda.is_available() and not args.cuda:
 # Dataset
 dataset = ImageDataset(root=os.path.join(args.dataroot, args.dataset),
                        transform=transforms.Compose([
-                           #transforms.Resize(256, Image.BICUBIC),
-                           #transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
-                           #transforms.RandomCrop(args.image_size),
-                           #transforms.RandomHorizontalFlip(),
+                           # transforms.Resize(256, Image.BICUBIC),
+                           # transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
+                           # transforms.RandomCrop(args.image_size),
+                           # transforms.RandomHorizontalFlip(),
                            transforms.ToTensor(),
                            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]),
                        unaligned=True)
@@ -163,6 +163,14 @@ cycle_losses = []
 
 fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
+
+errD_A_best = 1000.0
+errD_A_last = 1000.0
+
+best_netG_A2B = None
+best_netG_B2A = None
+best_netD_A = None
+best_netD_B = None
 
 for epoch in range(0, args.epochs):
     progress_bar = tqdm(enumerate(dataloader), total=len(dataloader))
@@ -234,6 +242,7 @@ for epoch in range(0, args.epochs):
 
         # Combined loss and calculate gradients
         errD_A = (errD_real_A + errD_fake_A) / 2
+        errD_A_last = errD_A
 
         # Calculate gradients for D_A
         errD_A.backward()
@@ -265,7 +274,6 @@ for epoch in range(0, args.epochs):
         optimizer_D_B.step()
         writer.add_scalar("errD_B/train", errD_B, epoch)
 
-
         progress_bar.set_description(
             f"[{epoch}/{args.epochs - 1}][{i}/{len(dataloader) - 1}] "
             f"Loss_D: {(errD_A + errD_B).item():.4f} "
@@ -274,29 +282,43 @@ for epoch in range(0, args.epochs):
             f"loss_G_GAN: {(loss_GAN_A2B + loss_GAN_B2A).item():.4f} "
             f"loss_G_cycle: {(loss_cycle_ABA + loss_cycle_BAB).item():.4f}")
 
-        if i % args.print_freq == 0:
-            vutils.save_image(real_image_A,
-                              f"{args.outf}/{args.dataset}/A/real_samples_epoch_{epoch}_{i}.png",
-                              normalize=True)
-            vutils.save_image(real_image_B,
-                              f"{args.outf}/{args.dataset}/B/real_samples_epoch_{epoch}_{i}.png",
-                              normalize=True)
+    #         if i % args.print_freq == 0:
+    #             vutils.save_image(real_image_A,
+    #                               f"{args.outf}/{args.dataset}/A/real_samples_epoch_{epoch}_{i}.png",
+    #                               normalize=True)
+    #             vutils.save_image(real_image_B,
+    #                               f"{args.outf}/{args.dataset}/B/real_samples_epoch_{epoch}_{i}.png",
+    #                               normalize=True)
 
-            fake_image_A = 0.5 * (netG_B2A(real_image_B).data + 1.0)
-            fake_image_B = 0.5 * (netG_A2B(real_image_A).data + 1.0)
+    #             fake_image_A = 0.5 * (netG_B2A(real_image_B).data + 1.0)
+    #             fake_image_B = 0.5 * (netG_A2B(real_image_A).data + 1.0)
 
-            vutils.save_image(fake_image_A.detach(),
-                              f"{args.outf}/{args.dataset}/A/fake_samples_epoch_{epoch}_{i}.png",
-                              normalize=True)
-            vutils.save_image(fake_image_B.detach(),
-                              f"{args.outf}/{args.dataset}/B/fake_samples_epoch_{epoch}_{i}.png",
-                              normalize=True)
+    #             vutils.save_image(fake_image_A.detach(),
+    #                               f"{args.outf}/{args.dataset}/A/fake_samples_epoch_{epoch}_{i}.png",
+    #                               normalize=True)
+    #             vutils.save_image(fake_image_B.detach(),
+    #                               f"{args.outf}/{args.dataset}/B/fake_samples_epoch_{epoch}_{i}.png",
+    #                               normalize=True)
 
-    # do check pointing
-    torch.save(netG_A2B.state_dict(), f"weights/{args.dataset}/netG_A2B_epoch_{epoch}.pth")
-    torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/netG_B2A_epoch_{epoch}.pth")
-    torch.save(netD_A.state_dict(), f"weights/{args.dataset}/netD_A_epoch_{epoch}.pth")
-    torch.save(netD_B.state_dict(), f"weights/{args.dataset}/netD_B_epoch_{epoch}.pth")
+    if errD_A_best > errD_A_last:
+        best_errD_A = errD_A_last
+
+        best_netG_A2B = netG_A2B.state_dict()
+        best_netG_B2A = netG_A2B.state_dict()
+        best_netD_A = netG_A2B.state_dict()
+        best_netD_B = netG_A2B.state_dict()
+
+    if epoch % 10 == 0:
+        # do check pointing
+        torch.save(netG_A2B.state_dict(), f"weights/{args.dataset}/last_netG_A2B_epoch_{epoch}.pth")
+        torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/last_netG_B2A_epoch_{epoch}.pth")
+        torch.save(netD_A.state_dict(), f"weights/{args.dataset}/last_netD_A_epoch_{epoch}.pth")
+        torch.save(netD_B.state_dict(), f"weights/{args.dataset}/last_netD_B_epoch_{epoch}.pth")
+        # do best check pointing
+        torch.save(best_netG_A2B, f"weights/{args.dataset}/best_netG_A2B_epoch_{epoch}.pth")
+        torch.save(best_netG_B2A, f"weights/{args.dataset}/best_netG_B2A_epoch_{epoch}.pth")
+        torch.save(best_netD_A, f"weights/{args.dataset}/best_netD_A_epoch_{epoch}.pth")
+        torch.save(best_netD_B, f"weights/{args.dataset}/best_netD_B_epoch_{epoch}.pth")
 
     # Update learning rates
     lr_scheduler_G.step()
