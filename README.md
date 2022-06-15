@@ -1,6 +1,6 @@
 # CycleGAN-PyTorch sim3real task
 
-<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="468" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" />
+<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="200" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" width="200" />
 
 ### Installation
 
@@ -89,4 +89,4 @@ Train losses:
 
 Inference result:
 
-<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="468" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" />
+<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="200" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" width="200" />
