@@ -12,6 +12,7 @@ import torchvision.utils as vutils
 from PIL import Image
 from cyclegan_pytorch import Generator
 
+
 class CycleganPredictor(cog.Predictor):
     def setup(self):
         """Load the CycleGan pre-trained model"""
@@ -26,29 +27,35 @@ class CycleganPredictor(cog.Predictor):
         self.model.eval()
 
     @cog.input("input", type=Path, help="Content image")
-    @cog.input("image_size", type=int, default=256,
-                help="size of the data crop (squared assumed)")
-
+    @cog.input(
+        "image_size",
+        type=int,
+        default=256,
+        help="size of the data crop (squared assumed)",
+    )
     def predict(self, input, image_size):
         """Separate the vocal track from an audio mixture"""
-        #compute prediction
+        # compute prediction
 
         # Load image and pre-process
         output_path = Path(tempfile.mkdtemp()) / "output.png"
         image = Image.open(str(input))
-        pre_process = transforms.Compose([transforms.Resize(image_size),
-                                          transforms.ToTensor(),
-                                          transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-                                          ])
+        pre_process = transforms.Compose(
+            [
+                transforms.Resize(image_size),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
         image = pre_process(image).unsqueeze(0)
         image = image.to(self.device)
 
-        #compute prediction
+        # compute prediction
         start = timeit.default_timer()
         fake_image = self.model(image)
-        elapsed = (timeit.default_timer() - start)
+        elapsed = timeit.default_timer() - start
         print(f"cost {elapsed:.4f}s")
-        #save results
+        # save results
         vutils.save_image(fake_image.detach(), str(output_path), normalize=True)
 
         return output_path

@@ -10,6 +10,15 @@ black = "^22.3.0"
 flake8 = "^4.0.1"
 isort = "^5.10.1"
 pre-commit = "^2.19.0"
+Pillow = "^9.1.1"
+tqdm = "^4.64.0"
+matplotlib = "^3.5.2"
+opencv-python = "^4.6.0"
+numpy = "^1.22.4"
+torch = "^1.11.0"
+torchvision = "^0.12.0"
+cog = "^0.0.3"
+mypy = "^0.961"
 
 [tool.poetry.dev-dependencies]
 

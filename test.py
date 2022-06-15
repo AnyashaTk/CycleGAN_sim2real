@@ -26,21 +26,35 @@ from cyclegan_pytorch import Generator
 from cyclegan_pytorch import ImageDataset
 
 parser = argparse.ArgumentParser(
-    description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`")
-parser.add_argument("--dataroot", type=str, default="./data",
-                    help="path to datasets. (default:./data)")
-parser.add_argument("--dataset", type=str, default="horse2zebra",
-                    help="dataset name. (default:`horse2zebra`)"
-                         "Option: [apple2orange, summer2winter_yosemite, horse2zebra, monet2photo, "
-                         "cezanne2photo, ukiyoe2photo, vangogh2photo, maps, facades, selfie2anime, "
-                         "iphone2dslr_flower, ae_photos, ]")
+    description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`"
+)
+parser.add_argument(
+    "--dataroot", type=str, default="./data", help="path to datasets. (default:./data)"
+)
+parser.add_argument(
+    "--dataset",
+    type=str,
+    default="horse2zebra",
+    help="dataset name. (default:`horse2zebra`)"
+    "Option: [apple2orange, summer2winter_yosemite, horse2zebra, monet2photo, "
+    "cezanne2photo, ukiyoe2photo, vangogh2photo, maps, facades, selfie2anime, "
+    "iphone2dslr_flower, ae_photos, ]",
+)
 parser.add_argument("--cuda", action="store_true", help="Enables cuda")
-parser.add_argument("--outf", default="./results",
-                    help="folder to output images. (default: `./results`).")
-parser.add_argument("--image-size", type=int, default=256,
-                    help="size of the data crop (squared assumed). (default:256)")
-parser.add_argument("--manualSeed", type=int,
-                    help="Seed for initializing training. (default:none)")
+parser.add_argument(
+    "--outf",
+    default="./results",
+    help="folder to output images. (default: `./results`).",
+)
+parser.add_argument(
+    "--image-size",
+    type=int,
+    default=256,
+    help="size of the data crop (squared assumed). (default:256)",
+)
+parser.add_argument(
+    "--manualSeed", type=int, help="Seed for initializing training. (default:none)"
+)
 
 args = parser.parse_args()
 print(args)
@@ -62,15 +76,21 @@ if torch.cuda.is_available() and not args.cuda:
     print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
 # Dataset
-dataset = ImageDataset(root=os.path.join(args.dataroot, args.dataset),
-                       transform=transforms.Compose([
-                           transforms.Resize(args.image_size),
-                           transforms.ToTensor(),
-                           transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
-                       ]),
-                       mode="test")
+dataset = ImageDataset(
+    root=os.path.join(args.dataroot, args.dataset),
+    transform=transforms.Compose(
+        [
+            transforms.Resize(args.image_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+        ]
+    ),
+    mode="test",
+)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, pin_memory=True)
+dataloader = torch.utils.data.DataLoader(
+    dataset, batch_size=1, shuffle=False, pin_memory=True
+)
 
 try:
     os.makedirs(os.path.join(args.outf, str(args.dataset), "A"))
@@ -85,8 +105,12 @@ netG_A2B = Generator().to(device)
 netG_B2A = Generator().to(device)
 
 # Load state dicts
-netG_A2B.load_state_dict(torch.load(os.path.join("weights", str(args.dataset), "netG_A2B.pth")))
-netG_B2A.load_state_dict(torch.load(os.path.join("weights", str(args.dataset), "netG_B2A.pth")))
+netG_A2B.load_state_dict(
+    torch.load(os.path.join("weights", str(args.dataset), "netG_A2B.pth"))
+)
+netG_B2A.load_state_dict(
+    torch.load(os.path.join("weights", str(args.dataset), "netG_B2A.pth"))
+)
 
 # Set model mode
 netG_A2B.eval()
@@ -104,7 +128,15 @@ for i, data in progress_bar:
     fake_image_B = 0.5 * (netG_A2B(real_images_A).data + 1.0)
 
     # Save image files
-    vutils.save_image(fake_image_A.detach(), f"{args.outf}/{args.dataset}/A/{i + 1:04d}.png", normalize=True)
-    vutils.save_image(fake_image_B.detach(), f"{args.outf}/{args.dataset}/B/{i + 1:04d}.png", normalize=True)
+    vutils.save_image(
+        fake_image_A.detach(),
+        f"{args.outf}/{args.dataset}/A/{i + 1:04d}.png",
+        normalize=True,
+    )
+    vutils.save_image(
+        fake_image_B.detach(),
+        f"{args.outf}/{args.dataset}/B/{i + 1:04d}.png",
+        normalize=True,
+    )
 
     progress_bar.set_description(f"Process images {i + 1} of {len(dataloader)}")

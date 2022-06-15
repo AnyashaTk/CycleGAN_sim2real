@@ -35,38 +35,77 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
 parser = argparse.ArgumentParser(
-    description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`")
-parser.add_argument("--dataroot", type=str, default="./data",
-                    help="path to datasets. (default:./data)")
-parser.add_argument("--dataset", type=str, default="horse2zebra",
-                    help="dataset name. (default:`horse2zebra`)"
-                         "Option: [apple2orange, summer2winter_yosemite, horse2zebra, monet2photo, "
-                         "cezanne2photo, ukiyoe2photo, vangogh2photo, maps, facades, selfie2anime, "
-                         "iphone2dslr_flower, ae_photos, ]")
-parser.add_argument("--epochs", default=200, type=int, metavar="N",
-                    help="number of total epochs to run")
-parser.add_argument("--decay_epochs", type=int, default=100,
-                    help="epoch to start linearly decaying the learning rate to 0. (default:100)")
-parser.add_argument("-b", "--batch-size", default=1, type=int,
-                    metavar="N",
-                    help="mini-batch size (default: 1), this is the total "
-                         "batch size of all GPUs on the current node when "
-                         "using Data Parallel or Distributed Data Parallel")
-parser.add_argument("--lr", type=float, default=0.0002,
-                    help="learning rate. (default:0.0002)")
-parser.add_argument("-p", "--print-freq", default=100, type=int,
-                    metavar="N", help="print frequency. (default:100)")
+    description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`"
+)
+parser.add_argument(
+    "--dataroot", type=str, default="./data", help="path to datasets. (default:./data)"
+)
+parser.add_argument(
+    "--dataset",
+    type=str,
+    default="horse2zebra",
+    help="dataset name. (default:`horse2zebra`)"
+    "Option: [apple2orange, summer2winter_yosemite, horse2zebra, monet2photo, "
+    "cezanne2photo, ukiyoe2photo, vangogh2photo, maps, facades, selfie2anime, "
+    "iphone2dslr_flower, ae_photos, ]",
+)
+parser.add_argument(
+    "--epochs", default=200, type=int, metavar="N", help="number of total epochs to run"
+)
+parser.add_argument(
+    "--decay_epochs",
+    type=int,
+    default=100,
+    help="epoch to start linearly decaying the learning rate to 0. (default:100)",
+)
+parser.add_argument(
+    "-b",
+    "--batch-size",
+    default=1,
+    type=int,
+    metavar="N",
+    help="mini-batch size (default: 1), this is the total "
+    "batch size of all GPUs on the current node when "
+    "using Data Parallel or Distributed Data Parallel",
+)
+parser.add_argument(
+    "--lr", type=float, default=0.0002, help="learning rate. (default:0.0002)"
+)
+parser.add_argument(
+    "-p",
+    "--print-freq",
+    default=100,
+    type=int,
+    metavar="N",
+    help="print frequency. (default:100)",
+)
 parser.add_argument("--cuda", action="store_true", help="Enables cuda")
-parser.add_argument("--netG_A2B", default="", help="path to netG_A2B (to continue training)")
-parser.add_argument("--netG_B2A", default="", help="path to netG_B2A (to continue training)")
-parser.add_argument("--netD_A", default="", help="path to netD_A (to continue training)")
-parser.add_argument("--netD_B", default="", help="path to netD_B (to continue training)")
-parser.add_argument("--image-size", type=int, default=256,
-                    help="size of the data crop (squared assumed). (default:256)")
-parser.add_argument("--outf", default="./outputs",
-                    help="folder to output images. (default:`./outputs`).")
-parser.add_argument("--manualSeed", type=int,
-                    help="Seed for initializing training. (default:none)")
+parser.add_argument(
+    "--netG_A2B", default="", help="path to netG_A2B (to continue training)"
+)
+parser.add_argument(
+    "--netG_B2A", default="", help="path to netG_B2A (to continue training)"
+)
+parser.add_argument(
+    "--netD_A", default="", help="path to netD_A (to continue training)"
+)
+parser.add_argument(
+    "--netD_B", default="", help="path to netD_B (to continue training)"
+)
+parser.add_argument(
+    "--image-size",
+    type=int,
+    default=256,
+    help="size of the data crop (squared assumed). (default:256)",
+)
+parser.add_argument(
+    "--outf",
+    default="./outputs",
+    help="folder to output images. (default:`./outputs`).",
+)
+parser.add_argument(
+    "--manualSeed", type=int, help="Seed for initializing training. (default:none)"
+)
 
 args = parser.parse_args()
 print(args)
@@ -93,17 +132,24 @@ if torch.cuda.is_available() and not args.cuda:
     print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
 # Dataset
-dataset = ImageDataset(root=os.path.join(args.dataroot, args.dataset),
-                       transform=transforms.Compose([
-                           # transforms.Resize(256, Image.BICUBIC),
-                           # transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
-                           # transforms.RandomCrop(args.image_size),
-                           # transforms.RandomHorizontalFlip(),
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]),
-                       unaligned=True)
+dataset = ImageDataset(
+    root=os.path.join(args.dataroot, args.dataset),
+    transform=transforms.Compose(
+        [
+            # transforms.Resize(256, Image.BICUBIC),
+            # transforms.Resize(int(args.image_size * 1.12), Image.BICUBIC),
+            # transforms.RandomCrop(args.image_size),
+            # transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]
+    ),
+    unaligned=True,
+)
 
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True, pin_memory=True)
+dataloader = torch.utils.data.DataLoader(
+    dataset, batch_size=args.batch_size, shuffle=True, pin_memory=True
+)
 
 try:
     os.makedirs(os.path.join(args.outf, args.dataset, "A"))
@@ -144,8 +190,11 @@ identity_loss = torch.nn.L1Loss().to(device)
 adversarial_loss = torch.nn.MSELoss().to(device)
 
 # Optimizers
-optimizer_G = torch.optim.Adam(itertools.chain(netG_A2B.parameters(), netG_B2A.parameters()),
-                               lr=args.lr, betas=(0.5, 0.999))
+optimizer_G = torch.optim.Adam(
+    itertools.chain(netG_A2B.parameters(), netG_B2A.parameters()),
+    lr=args.lr,
+    betas=(0.5, 0.999),
+)
 optimizer_D_A = torch.optim.Adam(netD_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
 optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
@@ -217,7 +266,14 @@ for epoch in range(0, args.epochs):
         loss_cycle_BAB = cycle_loss(recovered_image_B, real_image_B) * 10.0
 
         # Combined loss and calculate gradients
-        errG = loss_identity_A + loss_identity_B + loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
+        errG = (
+            loss_identity_A
+            + loss_identity_B
+            + loss_GAN_A2B
+            + loss_GAN_B2A
+            + loss_cycle_ABA
+            + loss_cycle_BAB
+        )
 
         # Calculate gradients for G_A and G_B
         errG.backward()
@@ -280,7 +336,8 @@ for epoch in range(0, args.epochs):
             f"Loss_G: {errG.item():.4f} "
             f"Loss_G_identity: {(loss_identity_A + loss_identity_B).item():.4f} "
             f"loss_G_GAN: {(loss_GAN_A2B + loss_GAN_B2A).item():.4f} "
-            f"loss_G_cycle: {(loss_cycle_ABA + loss_cycle_BAB).item():.4f}")
+            f"loss_G_cycle: {(loss_cycle_ABA + loss_cycle_BAB).item():.4f}"
+        )
 
     #         if i % args.print_freq == 0:
     #             vutils.save_image(real_image_A,
@@ -310,13 +367,27 @@ for epoch in range(0, args.epochs):
 
     if epoch % 10 == 0:
         # do check pointing
-        torch.save(netG_A2B.state_dict(), f"weights/{args.dataset}/last_netG_A2B_epoch_{epoch}.pth")
-        torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/last_netG_B2A_epoch_{epoch}.pth")
-        torch.save(netD_A.state_dict(), f"weights/{args.dataset}/last_netD_A_epoch_{epoch}.pth")
-        torch.save(netD_B.state_dict(), f"weights/{args.dataset}/last_netD_B_epoch_{epoch}.pth")
+        torch.save(
+            netG_A2B.state_dict(),
+            f"weights/{args.dataset}/last_netG_A2B_epoch_{epoch}.pth",
+        )
+        torch.save(
+            netG_B2A.state_dict(),
+            f"weights/{args.dataset}/last_netG_B2A_epoch_{epoch}.pth",
+        )
+        torch.save(
+            netD_A.state_dict(), f"weights/{args.dataset}/last_netD_A_epoch_{epoch}.pth"
+        )
+        torch.save(
+            netD_B.state_dict(), f"weights/{args.dataset}/last_netD_B_epoch_{epoch}.pth"
+        )
         # do best check pointing
-        torch.save(best_netG_A2B, f"weights/{args.dataset}/best_netG_A2B_epoch_{epoch}.pth")
-        torch.save(best_netG_B2A, f"weights/{args.dataset}/best_netG_B2A_epoch_{epoch}.pth")
+        torch.save(
+            best_netG_A2B, f"weights/{args.dataset}/best_netG_A2B_epoch_{epoch}.pth"
+        )
+        torch.save(
+            best_netG_B2A, f"weights/{args.dataset}/best_netG_B2A_epoch_{epoch}.pth"
+        )
         torch.save(best_netD_A, f"weights/{args.dataset}/best_netD_A_epoch_{epoch}.pth")
         torch.save(best_netD_B, f"weights/{args.dataset}/best_netD_B_epoch_{epoch}.pth")
 
