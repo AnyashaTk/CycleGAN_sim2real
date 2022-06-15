@@ -19,6 +19,7 @@ torch = "^1.11.0"
 torchvision = "^0.12.0"
 cog = "^0.0.3"
 mypy = "^0.961"
+yadisk = "^1.2.15"
 
 [tool.poetry.dev-dependencies]
 
