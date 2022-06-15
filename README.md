@@ -1,7 +1,6 @@
 # CycleGAN-PyTorch sim3real task
 
-![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png)
-![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png)
+<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="468" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" />
 
 ### Installation
 
@@ -89,5 +88,5 @@ Train losses:
 ![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/errD_B_train.svg)
 
 Inference result:
-![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png)
-![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png)
+
+<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="468" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" />
