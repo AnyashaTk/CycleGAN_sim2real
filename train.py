@@ -253,10 +253,12 @@ for epoch in range(0, args.epochs):
         fake_image_A = netG_B2A(real_image_B)
         fake_output_A = netD_A(fake_image_A)
         loss_GAN_B2A = adversarial_loss(fake_output_A, real_label)
+        writer.add_scalar("errG_B2A/train", loss_GAN_B2A, epoch)
         # GAN loss D_B(G_B(B))
         fake_image_B = netG_A2B(real_image_A)
         fake_output_B = netD_B(fake_image_B)
         loss_GAN_A2B = adversarial_loss(fake_output_B, real_label)
+        writer.add_scalar("errD_A2B/train", loss_GAN_A2B, epoch)
 
         # Cycle loss
         recovered_image_A = netG_B2A(fake_image_B)
@@ -277,6 +279,8 @@ for epoch in range(0, args.epochs):
 
         # Calculate gradients for G_A and G_B
         errG.backward()
+        writer.add_scalar("errG/train", errG, epoch)
+        
         # Update G_A and G_B's weights
         optimizer_G.step()
 
@@ -304,6 +308,7 @@ for epoch in range(0, args.epochs):
         errD_A.backward()
         # Update D_A weights
         optimizer_D_A.step()
+        writer.add_scalar("errD_A/train", errD_A, epoch)
 
         ##############################################
         # (3) Update D network: Discriminator B
