@@ -24,9 +24,10 @@ from torch.utils.data import Dataset
 
 
 class ImageDataset(Dataset):
-    def __init__(self, root, transform=None, unaligned=False, mode="train"):
+    def __init__(self, root, transform=None, unaligned=False, mode="train", image_size=512):
         self.transform = transform
         self.unaligned = unaligned
+        self.image_size = image_size
 
         self.files_A = sorted(glob.glob(os.path.join(root, f"{mode}/A") + "/*.*"))
         self.files_B = sorted(glob.glob(os.path.join(root, f"{mode}/B") + "/*.*"))
@@ -34,7 +35,7 @@ class ImageDataset(Dataset):
     def __getitem__(self, index):
         # use cv2 for reading and resizing, because PIL+transform resizing didn't work for some reason
         item_A = self.transform(
-            cv2.resize(cv2.imread(self.files_A[index % len(self.files_A)]), (256, 256))
+            cv2.resize(cv2.imread(self.files_A[index % len(self.files_A)]), (self.image_size, self.image_size))
         )
         #         item_A = self.transform(Image.open(self.files_A[index % len(self.files_A)]))
 
@@ -42,14 +43,14 @@ class ImageDataset(Dataset):
             item_B = self.transform(
                 cv2.resize(
                     cv2.imread(self.files_B[random.randint(0, len(self.files_B) - 1)]),
-                    (256, 256),
+                    (self.image_size, self.image_size),
                 )
             )
         #             item_B = self.transform(Image.open(self.files_B[random.randint(0, len(self.files_B) - 1)]))
         else:
             item_B = self.transform(
                 cv2.resize(
-                    cv2.imread(self.files_B[index % len(self.files_B)]), (256, 256)
+                    cv2.imread(self.files_B[index % len(self.files_B)]), (self.image_size, self.image_size)
                 )
             )
         #             item_B = self.transform(Image.open(self.files_B[index % len(self.files_B)]))

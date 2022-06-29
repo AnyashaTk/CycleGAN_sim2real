@@ -31,6 +31,7 @@ from cyclegan_pytorch import ReplayBuffer
 from cyclegan_pytorch import weights_init
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from cyclegan_pytorch.fid_loss import fid as fid_loss
 
 writer = SummaryWriter()
 
@@ -144,7 +145,7 @@ dataset = ImageDataset(
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
     ),
-    unaligned=True,
+    unaligned=True, image_size= args.image_size
 )
 
 dataloader = torch.utils.data.DataLoader(
@@ -252,13 +253,13 @@ for epoch in range(0, args.epochs):
         # GAN loss D_A(G_A(A))
         fake_image_A = netG_B2A(real_image_B)
         fake_output_A = netD_A(fake_image_A)
-        loss_GAN_B2A = adversarial_loss(fake_output_A, real_label)
+        loss_GAN_B2A = fid_loss(fake_image_A, real_image_A, device)
         writer.add_scalar("errG_B2A/train", loss_GAN_B2A, epoch)
         # GAN loss D_B(G_B(B))
         fake_image_B = netG_A2B(real_image_A)
         fake_output_B = netD_B(fake_image_B)
-        loss_GAN_A2B = adversarial_loss(fake_output_B, real_label)
-        writer.add_scalar("errD_A2B/train", loss_GAN_A2B, epoch)
+        loss_GAN_A2B = fid_loss(fake_image_B, real_image_B, device)
+        writer.add_scalar("errG_A2B/train", loss_GAN_A2B, epoch)
 
         # Cycle loss
         recovered_image_A = netG_B2A(fake_image_B)
@@ -370,7 +371,7 @@ for epoch in range(0, args.epochs):
         best_netD_A = netG_A2B.state_dict()
         best_netD_B = netG_A2B.state_dict()
 
-    if epoch % 10 == 0:
+    if epoch % 10 == 0 or epoch == args.epochs or epoch == args.epochs-1:
         # do check pointing
         torch.save(
             netG_A2B.state_dict(),
@@ -407,3 +408,16 @@ torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/netG_B2A.pth")
 torch.save(netD_A.state_dict(), f"weights/{args.dataset}/netD_A.pth")
 torch.save(netD_B.state_dict(), f"weights/{args.dataset}/netD_B.pth")
 writer.flush()
+
+
+# send a message 
+import requests
+
+def send_msg(text):
+    token = "5591559957:AAGnImHfHmzFFWJC-e-tp0i-Ow0nmCWWyNQ"
+    chat_id = "803812742"
+    url_req = "https://api.telegram.org/bot" + token + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + text 
+    results = requests.get(url_req)
+    # print(results.json())
+
+send_msg("your train cycle end now")
