@@ -1,4 +1,4 @@
-# CycleGAN-PyTorch sim3real task
+# CycleGAN-PyTorch sim2real task
 
 <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="400" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" width="400" />
 
