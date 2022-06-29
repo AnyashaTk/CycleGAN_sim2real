@@ -1,30 +1,18 @@
-# Copyright 2020 Lorna Authors. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 import argparse
 import random
 import timeit
 
-import torch.backends.cudnn as cudnn
-import torch.utils.data.distributed
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
 from PIL import Image
+from torch.backends import cudnn
+import torch.utils.data.distributed
+from torchvision import transforms, utils
+
 
 from cyclegan_pytorch import Generator
 
 parser = argparse.ArgumentParser(
-    description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`"
+    description="PyTorch implements `Unpaired Image-to-Image "
+    "Translation using Cycle-Consistent Adversarial Networks`"
 )
 parser.add_argument(
     "--file",
@@ -46,7 +34,9 @@ parser.add_argument(
     help="size of the data crop (squared assumed). (default:256)",
 )
 parser.add_argument(
-    "--manualSeed", type=int, help="Seed for initializing training. (default:none)"
+    "--manualSeed",
+    type=int,
+    help="Seed for initializing training. (default:none)",
 )
 
 args = parser.parse_args()
@@ -61,7 +51,10 @@ torch.manual_seed(args.manualSeed)
 cudnn.benchmark = True
 
 if torch.cuda.is_available() and not args.cuda:
-    print("WARNING: You have a CUDA device, so you should probably run with --cuda")
+    print(
+        "WARNING: You have a CUDA device, so you "
+        "should probably run with --cuda"
+    )
 
 device = torch.device("cuda:0" if args.cuda else "cpu")
 
@@ -90,4 +83,4 @@ start = timeit.default_timer()
 fake_image = model(image)
 elapsed = timeit.default_timer() - start
 print(f"cost {elapsed:.4f}s")
-vutils.save_image(fake_image.detach(), "result.png", normalize=True)
+utils.save_image(fake_image.detach(), "result.png", normalize=True)

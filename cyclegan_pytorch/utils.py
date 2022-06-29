@@ -1,23 +1,15 @@
-# Copyright 2020 Lorna Authors. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
+import glob
 import random
 
+import cv2
 import torch
 
 
 class ReplayBuffer:
+    """."""
+
     def __init__(self, max_size=50):
+        """."""
         assert (
             max_size > 0
         ), "Empty buffer or trying to create a black hole. Be careful."
@@ -25,6 +17,7 @@ class ReplayBuffer:
         self.data = []
 
     def push_and_pop(self, data):
+        """."""
         to_return = []
         for element in data.data:
             element = torch.unsqueeze(element, 0)
@@ -43,9 +36,31 @@ class ReplayBuffer:
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
+    """."""
     classname = m.__class__.__name__
     if classname.find("Conv") != -1:
         torch.nn.init.normal_(m.weight, 0.0, 0.02)
     elif classname.find("BatchNorm") != -1:
         torch.nn.init.normal_(m.weight, 1.0, 0.02)
         torch.nn.init.zeros_(m.bias)
+
+
+# changing directories
+def order_dataset():
+    """."""
+    folders = glob.glob(
+        "/media/vlad/20127138-1a35-451b-85c0-a84dbc12ae79/storage/gta5_2_real/cityscapes_images/val/*"
+    )
+    paths = []
+    for folder in folders:
+        paths += glob.glob(folder + "/*")
+
+    print(len(paths))
+    for path in paths:
+        img = cv2.imread(path)
+        cv2.imwrite(
+            path.replace("frankfurt", "new")
+            .replace("lindau", "new")
+            .replace("munster", "new"),
+            img,
+        )

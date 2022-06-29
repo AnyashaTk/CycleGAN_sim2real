@@ -1,26 +1,12 @@
-# Copyright 2020 Lorna Authors. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 import argparse
 import itertools
 import os
 import random
 
-import torch.backends.cudnn as cudnn
-import torch.utils.data
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
-from PIL import Image
+import torch
+from torch.backends import cudnn
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
 from tqdm import tqdm
 
 from cyclegan_pytorch import DecayLR
@@ -29,9 +15,8 @@ from cyclegan_pytorch import Generator
 from cyclegan_pytorch import ImageDataset
 from cyclegan_pytorch import ReplayBuffer
 from cyclegan_pytorch import weights_init
-import torch
-from torch.utils.tensorboard import SummaryWriter
 from cyclegan_pytorch.fid_loss import fid as fid_loss
+
 
 writer = SummaryWriter()
 
@@ -39,7 +24,10 @@ parser = argparse.ArgumentParser(
     description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`"
 )
 parser.add_argument(
-    "--dataroot", type=str, default="./data", help="path to datasets. (default:./data)"
+    "--dataroot",
+    type=str,
+    default="./data",
+    help="path to datasets. (default:./data)",
 )
 parser.add_argument(
     "--dataset",
@@ -51,7 +39,11 @@ parser.add_argument(
     "iphone2dslr_flower, ae_photos, ]",
 )
 parser.add_argument(
-    "--epochs", default=200, type=int, metavar="N", help="number of total epochs to run"
+    "--epochs",
+    default=200,
+    type=int,
+    metavar="N",
+    help="number of total epochs to run",
 )
 parser.add_argument(
     "--decay_epochs",
@@ -105,7 +97,9 @@ parser.add_argument(
     help="folder to output images. (default:`./outputs`).",
 )
 parser.add_argument(
-    "--manualSeed", type=int, help="Seed for initializing training. (default:none)"
+    "--manualSeed",
+    type=int,
+    help="Seed for initializing training. (default:none)",
 )
 
 args = parser.parse_args()
@@ -130,7 +124,9 @@ torch.manual_seed(args.manualSeed)
 cudnn.benchmark = True
 
 if torch.cuda.is_available() and not args.cuda:
-    print("WARNING: You have a CUDA device, so you should probably run with --cuda")
+    print(
+        "WARNING: You have a CUDA device, so you should probably run with --cuda"
+    )
 
 # Dataset
 dataset = ImageDataset(
@@ -145,7 +141,8 @@ dataset = ImageDataset(
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
     ),
-    unaligned=True, image_size= args.image_size
+    unaligned=True,
+    image_size=args.image_size,
 )
 
 dataloader = torch.utils.data.DataLoader(
@@ -196,20 +193,30 @@ optimizer_G = torch.optim.Adam(
     lr=args.lr,
     betas=(0.5, 0.999),
 )
-optimizer_D_A = torch.optim.Adam(netD_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
-optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=args.lr, betas=(0.5, 0.999))
+optimizer_D_A = torch.optim.Adam(
+    netD_A.parameters(), lr=args.lr, betas=(0.5, 0.999)
+)
+optimizer_D_B = torch.optim.Adam(
+    netD_B.parameters(), lr=args.lr, betas=(0.5, 0.999)
+)
 
 lr_lambda = DecayLR(args.epochs, 0, args.decay_epochs).step
-lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=lr_lambda)
-lr_scheduler_D_A = torch.optim.lr_scheduler.LambdaLR(optimizer_D_A, lr_lambda=lr_lambda)
-lr_scheduler_D_B = torch.optim.lr_scheduler.LambdaLR(optimizer_D_B, lr_lambda=lr_lambda)
+lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(
+    optimizer_G, lr_lambda=lr_lambda
+)
+lr_scheduler_D_A = torch.optim.lr_scheduler.LambdaLR(
+    optimizer_D_A, lr_lambda=lr_lambda
+)
+lr_scheduler_D_B = torch.optim.lr_scheduler.LambdaLR(
+    optimizer_D_B, lr_lambda=lr_lambda
+)
 
-g_losses = []
-d_losses = []
+g_losses = list[float]
+d_losses = list[float]
 
-identity_losses = []
-gan_losses = []
-cycle_losses = []
+identity_losses = list[float]
+gan_losses = list[float]
+cycle_losses = list[float]
 
 fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
@@ -231,8 +238,12 @@ for epoch in range(0, args.epochs):
         batch_size = real_image_A.size(0)
 
         # real data label is 1, fake data label is 0.
-        real_label = torch.full((batch_size, 1), 1, device=device, dtype=torch.float32)
-        fake_label = torch.full((batch_size, 1), 0, device=device, dtype=torch.float32)
+        real_label = torch.full(
+            (batch_size, 1), 1, device=device, dtype=torch.float32
+        )
+        fake_label = torch.full(
+            (batch_size, 1), 0, device=device, dtype=torch.float32
+        )
 
         ##############################################
         # (1) Update G network: Generators A2B and B2A
@@ -281,7 +292,7 @@ for epoch in range(0, args.epochs):
         # Calculate gradients for G_A and G_B
         errG.backward()
         writer.add_scalar("errG/train", errG, epoch)
-        
+
         # Update G_A and G_B's weights
         optimizer_G.step()
 
@@ -371,7 +382,7 @@ for epoch in range(0, args.epochs):
         best_netD_A = netG_A2B.state_dict()
         best_netD_B = netG_A2B.state_dict()
 
-    if epoch % 10 == 0 or epoch == args.epochs or epoch == args.epochs-1:
+    if epoch % 10 == 0:
         # do check pointing
         torch.save(
             netG_A2B.state_dict(),
@@ -382,20 +393,30 @@ for epoch in range(0, args.epochs):
             f"weights/{args.dataset}/last_netG_B2A_epoch_{epoch}.pth",
         )
         torch.save(
-            netD_A.state_dict(), f"weights/{args.dataset}/last_netD_A_epoch_{epoch}.pth"
+            netD_A.state_dict(),
+            f"weights/{args.dataset}/last_netD_A_epoch_{epoch}.pth",
         )
         torch.save(
-            netD_B.state_dict(), f"weights/{args.dataset}/last_netD_B_epoch_{epoch}.pth"
+            netD_B.state_dict(),
+            f"weights/{args.dataset}/last_netD_B_epoch_{epoch}.pth",
         )
         # do best check pointing
         torch.save(
-            best_netG_A2B, f"weights/{args.dataset}/best_netG_A2B_epoch_{epoch}.pth"
+            best_netG_A2B,
+            f"weights/{args.dataset}/best_netG_A2B_epoch_{epoch}.pth",
         )
         torch.save(
-            best_netG_B2A, f"weights/{args.dataset}/best_netG_B2A_epoch_{epoch}.pth"
+            best_netG_B2A,
+            f"weights/{args.dataset}/best_netG_B2A_epoch_{epoch}.pth",
         )
-        torch.save(best_netD_A, f"weights/{args.dataset}/best_netD_A_epoch_{epoch}.pth")
-        torch.save(best_netD_B, f"weights/{args.dataset}/best_netD_B_epoch_{epoch}.pth")
+        torch.save(
+            best_netD_A,
+            f"weights/{args.dataset}/best_netD_A_epoch_{epoch}.pth",
+        )
+        torch.save(
+            best_netD_B,
+            f"weights/{args.dataset}/best_netD_B_epoch_{epoch}.pth",
+        )
 
     # Update learning rates
     lr_scheduler_G.step()
@@ -408,16 +429,3 @@ torch.save(netG_B2A.state_dict(), f"weights/{args.dataset}/netG_B2A.pth")
 torch.save(netD_A.state_dict(), f"weights/{args.dataset}/netD_A.pth")
 torch.save(netD_B.state_dict(), f"weights/{args.dataset}/netD_B.pth")
 writer.flush()
-
-
-# send a message 
-import requests
-
-def send_msg(text):
-    token = "5591559957:AAGnImHfHmzFFWJC-e-tp0i-Ow0nmCWWyNQ"
-    chat_id = "803812742"
-    url_req = "https://api.telegram.org/bot" + token + "/sendMessage" + "?chat_id=" + chat_id + "&text=" + text 
-    results = requests.get(url_req)
-    # print(results.json())
-
-send_msg("your train cycle end now")

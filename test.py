@@ -1,35 +1,23 @@
-# Copyright 2020 Lorna Authors. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 import argparse
 import os
 import random
 
-import torch.backends.cudnn as cudnn
-import torch.utils.data
+from torch.backends import cudnn
 import torch.utils.data.distributed
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
+from torchvision import transforms
+from torchvision import utils
 from tqdm import tqdm
 
-from cyclegan_pytorch import Generator
-from cyclegan_pytorch import ImageDataset
+from cyclegan_pytorch import Generator, ImageDataset
 
 parser = argparse.ArgumentParser(
     description="PyTorch implements `Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks`"
 )
 parser.add_argument(
-    "--dataroot", type=str, default="./data", help="path to datasets. (default:./data)"
+    "--dataroot",
+    type=str,
+    default="./data",
+    help="path to datasets. (default:./data)",
 )
 parser.add_argument(
     "--dataset",
@@ -53,10 +41,14 @@ parser.add_argument(
     help="size of the data crop (squared assumed). (default:256)",
 )
 parser.add_argument(
-    "--manualSeed", type=int, help="Seed for initializing training. (default:none)"
+    "--manualSeed",
+    type=int,
+    help="Seed for initializing training. (default:none)",
 )
 
 args = parser.parse_args()
+
+
 print(args)
 
 try:
@@ -73,7 +65,9 @@ torch.manual_seed(args.manualSeed)
 cudnn.benchmark = True
 
 if torch.cuda.is_available() and not args.cuda:
-    print("WARNING: You have a CUDA device, so you should probably run with --cuda")
+    print(
+        "WARNING: You have a CUDA device, so you should probably run with --cuda"
+    )
 
 # Dataset
 dataset = ImageDataset(
@@ -128,15 +122,17 @@ for i, data in progress_bar:
     fake_image_B = 0.5 * (netG_A2B(real_images_A).data + 1.0)
 
     # Save image files
-    vutils.save_image(
+    utils.save_image(
         fake_image_A.detach(),
         f"{args.outf}/{args.dataset}/A/{i + 1:04d}.png",
         normalize=True,
     )
-    vutils.save_image(
+    utils.save_image(
         fake_image_B.detach(),
         f"{args.outf}/{args.dataset}/B/{i + 1:04d}.png",
         normalize=True,
     )
 
-    progress_bar.set_description(f"Process images {i + 1} of {len(dataloader)}")
+    progress_bar.set_description(
+        f"Process images {i + 1} of {len(dataloader)}"
+    )

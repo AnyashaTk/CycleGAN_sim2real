@@ -1,12 +1,7 @@
-import os
-import pathlib
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
-
 import numpy as np
-import torch
-import torchvision.transforms as TF
-from PIL import Image
+from pytorch_fid.inception import InceptionV3
 from scipy import linalg
+import torch
 from torch.nn.functional import adaptive_avg_pool2d
 
 try:
@@ -14,13 +9,13 @@ try:
 except ImportError:
     # If tqdm is not available, provide a mock version of it
     def tqdm(x):
+        """."""
         return x
 
-from pytorch_fid.inception import InceptionV3
 
-
-def get_activations(files, model, batch_size=50, dims=2048, device='cpu',
-                    num_workers=1):
+def get_activations(
+    files, model, batch_size=50, dims=2048, device="cpu", num_workers=1
+):
     """Calculates the activations of the pool_3 layer for all images.
     Params:
     -- files       : List of image files paths
@@ -39,9 +34,9 @@ def get_activations(files, model, batch_size=50, dims=2048, device='cpu',
        query tensor.
     """
     model.eval()
-    
+
     pred_arr = np.empty((files.shape[0], 2048))
-    
+
     start_idx = 0
 
     with torch.no_grad():
@@ -52,7 +47,7 @@ def get_activations(files, model, batch_size=50, dims=2048, device='cpu',
 
     pred = pred.squeeze(3).squeeze(2).cpu().numpy()
 
-    pred_arr[start_idx:start_idx + pred.shape[0]] = pred
+    pred_arr[start_idx : start_idx + pred.shape[0]] = pred
 
     return pred_arr
 
@@ -82,18 +77,22 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     sigma1 = np.atleast_2d(sigma1)
     sigma2 = np.atleast_2d(sigma2)
 
-    assert mu1.shape == mu2.shape, \
-        'Training and test mean vectors have different lengths'
-    assert sigma1.shape == sigma2.shape, \
-        'Training and test covariances have different dimensions'
+    assert (
+        mu1.shape == mu2.shape
+    ), "Training and test mean vectors have different lengths"
+    assert (
+        sigma1.shape == sigma2.shape
+    ), "Training and test covariances have different dimensions"
 
     diff = mu1 - mu2
 
     # Product might be almost singular
     covmean, _ = linalg.sqrtm(sigma1.dot(sigma2), disp=False)
     if not np.isfinite(covmean).all():
-        msg = ('fid calculation produces singular product; '
-               'adding %s to diagonal of cov estimates') % eps
+        msg = (
+            "fid calculation produces singular product; "
+            "adding %s to diagonal of cov estimates"
+        ) % eps
         print(msg)
         offset = np.eye(sigma1.shape[0]) * eps
         covmean = linalg.sqrtm((sigma1 + offset).dot(sigma2 + offset))
@@ -102,17 +101,19 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     if np.iscomplexobj(covmean):
         if not np.allclose(np.diagonal(covmean).imag, 0, atol=1e-3):
             m = np.max(np.abs(covmean.imag))
-            raise ValueError('Imaginary component {}'.format(m))
+            raise ValueError(f"Imaginary component {m}")
         covmean = covmean.real
 
     tr_covmean = np.trace(covmean)
 
-    return (diff.dot(diff) + np.trace(sigma1)
-            + np.trace(sigma2) - 2 * tr_covmean)
+    return (
+        diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean
+    )
 
 
-def calculate_activation_statistics(files, model, batch_size=50, dims=2048,
-                                    device='cpu', num_workers=1):
+def calculate_activation_statistics(
+    files, model, batch_size=50, dims=2048, device="cpu", num_workers=1
+):
     """Calculation of the statistics used by the FID.
     Params:
     -- files       : List of image files paths
@@ -135,8 +136,10 @@ def calculate_activation_statistics(files, model, batch_size=50, dims=2048,
     return mu, sigma
 
 
-def fid(file1, file2, device='cpu', dims=2048, num_workers=1):
-    
+def fid(file1, file2, device="cpu", dims=2048, num_workers=1):
+    """Main function, preparing the Inception,
+    prepare images and calculate loss
+    """
     block_idx = InceptionV3.BLOCK_INDEX_BY_DIM[dims]
 
     model = InceptionV3([block_idx]).to(device)
