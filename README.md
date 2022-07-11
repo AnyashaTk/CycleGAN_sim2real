@@ -81,12 +81,3 @@ optional arguments:
 # Example: perfect
 $ python3 train.py --dataset perfect --cuda
 ```
-
-#### Results
-Train losses:
-
-![https://myoctocat.com/assets/images/base-octocat.svg](https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/errD_B_train.svg)
-
-Inference result:
-
-<img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_in.png" width="400" /> <img src="https://github.com/AnyashaTk/-CycleGAN_sim2real/blob/main/assets/example_out.png" width="400" />
